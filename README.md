@@ -15,3 +15,11 @@ python3 main.py \
         --labels ./models/coco_labels.txt \
         --image ./bk.png
 ```
+
+- If you're running Debian Linux or a derivative of Debian (including Raspberry Pi OS), you should install from our Debian package repo. This requires that you add a new repo list and key to your system and then install as follows:
+```console
+echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+sudo apt-get update
+sudo apt-get install python3-tflite-runtime
+```

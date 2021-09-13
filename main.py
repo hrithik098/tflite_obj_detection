@@ -8,6 +8,7 @@ import time
 import numpy as np
 from pprint import pprint
 import re
+import argparse
 
 
 def draw_bounding_box_on_image( image, ymin, xmin, ymax, xmax, color, font, thickness=4, display_str_list=()):
@@ -118,7 +119,7 @@ def count_humans(humans):
     return count
 
 
-def detect_objects(interpreter, image, threshold):
+def detect_objects(interpreter, image, threshold ,labels):
     """Returns a list of detection results, each a dictionary of object info."""
     set_input_tensor(interpreter, image)
     interpreter.invoke()
@@ -141,32 +142,43 @@ def detect_objects(interpreter, image, threshold):
     return results
 
 
-labels = load_labels("./models/coco_labels.txt")
-interpreter = tflite.Interpreter(model_path="./models/detect.tflite")
-interpreter.allocate_tensors()
-_, height, width, _ = interpreter.get_input_details()[0]["shape"]
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--model', help='File path of .tflite file.', required=True)
+    parser.add_argument('--labels', help='File path of labels file.', required=True)
+    parser.add_argument('--image', help='File path of the image on to detection is to be performed.', required=True)
 
-image = Image.open("./meeting2.jpeg").convert("RGB").resize((width, height), Image.ANTIALIAS)
+    args = parser.parse_args()
+    labels = load_labels(args.labels)
+    interpreter = tflite.Interpreter(args.model)
+    interpreter.allocate_tensors()
+    _, height, width, _ = interpreter.get_input_details()[0]["shape"]
 
-start_time = time.monotonic()
-results = detect_objects(interpreter, image, 0.1)
-elapsed_ms = (time.monotonic() - start_time) * 1000
+    image = Image.open(args.image).convert("RGB").resize((width, height), Image.ANTIALIAS)
 
-print("Inference Time : ", elapsed_ms)
-total_humans = count_humans(results)
+    start_time = time.monotonic()
+    results = detect_objects(interpreter, image, 0.1, labels)
+    elapsed_ms = (time.monotonic() - start_time) * 1000
 
-all_scores = []
-all_classes = []
-all_boxes = []
-for result in results:
-    all_scores.append(result["score"])
-    all_classes.append(result["class_id"])
-    all_boxes.append(result["bounding_box"])
+    print("Inference Time : ", elapsed_ms)
+    total_humans = count_humans(results)
 
-image = np.array(image)
-image_with_boxes = draw_boxes( image, all_boxes, all_classes, all_scores)
-image_with_boxes.save("./labeled_photo.png")
+    all_scores = []
+    all_classes = []
+    all_boxes = []
+    for result in results:
+        all_scores.append(result["score"])
+        all_classes.append(result["class_id"])
+        all_boxes.append(result["bounding_box"])
 
-pprint(results)
+    image = np.array(image)
+    image_with_boxes = draw_boxes( image, all_boxes, all_classes, all_scores)
+    image_with_boxes.save("./labeled_photo.png")
 
-print("Total humans -> ", total_humans)
+    pprint(results)
+
+    print("Total humans -> ", total_humans)
+
+if __name__ == "__main__":
+    main()

@@ -1,2 +1,6 @@
 /models
 *.png
+*.tflite
+.vscode
+.DS_Store
+*.jpeg

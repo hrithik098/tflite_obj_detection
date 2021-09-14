@@ -14,7 +14,7 @@ def save_image(img):
     with counter.get_lock():
         counter.value += 1
         count = counter.value
-	image_dir = "images"
+    image_dir = "images"
     if not os.path.isdir(image_dir):
         os.mkdir(image_dir)
 

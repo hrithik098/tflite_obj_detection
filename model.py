@@ -180,5 +180,42 @@ def main():
 
     print("Total humans -> ", total_humans)
 
+
+def get_humans(image_path):
+    """
+    Returns a int of number humans given the image path.
+    """
+    labels = load_labels("./models/coco_labels.txt")
+    interpreter = tflite.Interpreter("./models/detect.tflite")
+    interpreter.allocate_tensors()
+    _, height, width, _ = interpreter.get_input_details()[0]["shape"]
+
+    image = Image.open(image_path).convert("RGB").resize((width, height), Image.ANTIALIAS)
+
+    start_time = time.monotonic()
+    results = detect_objects(interpreter, image, 0.1, labels)
+    elapsed_ms = (time.monotonic() - start_time) * 1000
+
+    print("Inference Time : ", elapsed_ms)
+    total_humans = count_humans(results)
+
+    all_scores = []
+    all_classes = []
+    all_boxes = []
+    for result in results:
+        all_scores.append(result["score"])
+        all_classes.append(result["class_id"])
+        all_boxes.append(result["bounding_box"])
+
+    image = np.array(image)
+    image_with_boxes = draw_boxes( image, all_boxes, all_classes, all_scores)
+    image_with_boxes.save("./labeled_photo.png")
+
+    pprint(results)
+
+    print("Total humans -> ", total_humans)
+
+    return total_humans
+
 if __name__ == "__main__":
     main()

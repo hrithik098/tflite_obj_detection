@@ -10,7 +10,7 @@ bash ./download.sh ./models
 
 - Run the script
 ```console
-python3 main.py \
+python3 model.py \
         --model ./models/detect.tflite \
         --labels ./models/coco_labels.txt \
         --image ./bk.png

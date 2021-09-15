@@ -5,6 +5,7 @@ import cv2
 import os
 from multiprocessing import Value
 import model
+import shutil
 
 app = Flask(__name__)
 
@@ -32,10 +33,7 @@ def index():
 
 # delete image if there are more than 50 images
 def delete_image():
-    if os.path.exists("images"):
-        os.rmdir("images")
-        return True
-    return False
+    shutil.rmtree("./images")
 
 
 @app.route("/tflite/personCount", methods=["POST"])

@@ -61,6 +61,7 @@ def upload():
         # check if there are more than 360 photos delete all photos
         if counter.value > 360:
             deleted = delete_image()
+            counter.value = 0
             if deleted:
                 print("Deleted images")
             else:

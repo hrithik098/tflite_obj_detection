@@ -1,3 +1,4 @@
+
 from flask import request, jsonify, Flask
 import numpy as np
 import cv2
@@ -19,11 +20,10 @@ def save_image(img):
         os.mkdir(image_dir)
 
      # save image in images/img_<count>.jpg format
-    file_path = os.path.join(image_dir, "img_" + str(count) + ".jpg")
+    file_path = image_dir, "img_" + str(count) + ".jpg"
 
     # store the image in above path
-    cv2.imwrite(os.path.join(file_path, img))
-    return file_path
+    cv2.imwrite(os.path.join(image_dir,"img_"+str(count)+".jpg"), img)
 
 
 @app.route('/', methods=['GET'])
@@ -32,37 +32,47 @@ def index():
     return jsonify(data)
 
 # delete image if there are more than 50 images
-def delete_image(file_path):
-    if os.path.exists(file_path):
-        os.remove(file_path)
+def delete_image():
+    if os.path.isdir("images"):
+        os.rmdir("images")
         return True
     return False
 
 
 @app.route('/tflite/personCount', methods=['POST'])
 def upload():
+    img = None
     if request.files:
         
         file  = request.files['imageFile']
 
-        # convert string of image data to uint8
-        np_image = np.fromstring(file.read(), np.uint8)
+         # convert string of image data to uint8
+	np_image = np.fromstring(file.read(), np.uint8)
 
         # decode image
-        img = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
+
+    	img = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
 
         # save image in images folder
-        file_path = save_image(img)
+
+    	file_path = save_image(img)
 
         # run model on image
-        total_humans = model.get_humans(file_path)
 
-        
-        data = {"code": 201, "message": "Saved Image", "person_count": total_humans}
+    	total_humans = model.get_humans('./images/img_'
+                                    + str(counter.value) + '.jpg')
 
+        # check if there are more than 360 photos delete all photos
+
+    	if counter.value > 360:
+        	delete_image()
+
+    	data = {'code': 201, 'message': 'Saved Image',
+            'person_count': total_humans}
     else:
         data = {"code": 204, "message": "[FAILED] Image Not Received"}
     
     return jsonify(data)
 
-app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')

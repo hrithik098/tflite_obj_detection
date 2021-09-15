@@ -20,9 +20,6 @@ def save_image(img):
     if not os.path.isdir(image_dir):
         os.mkdir(image_dir)
 
-     # save image in images/img_<count>.jpg format
-    file_path = image_dir, "img_" + str(count) + ".jpg"
-
     # store the image in above path
     cv2.imwrite(os.path.join(image_dir,"img_"+str(count)+".jpg"), img)
 
@@ -49,18 +46,18 @@ def upload():
         file = request.files["imageFile"]
 
          # convert string of image data to uint8
-	np_image = np.fromstring(file.read(), np.uint8)
+        np_image = np.fromstring(file.read(), np.uint8)
 
         # decode image
 
-    	img = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
+        img = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
 
         # save image in images folder
 
-    	save_image(img)
+        save_image(img)
 
         # run model on image
-    	total_humans = model.get_humans('./images/img_'
+        total_humans = model.get_humans('./images/img_'
                                     + str(counter.value) + '.jpg')
 
         # check if there are more than 360 photos delete all photos
@@ -71,7 +68,7 @@ def upload():
             else:
                 print("Path not exists")
 
-    	data = {'code': 201, 'message': 'Saved Image',
+        data = {'code': 201, 'message': 'Saved Image',
             'person_count': total_humans}
     else:
         data = {"code": 204, "message": "[FAILED] Image Not Received"}
